@@ -34,6 +34,7 @@ export function settleOffline(s: GameState, wallNow: number): Decimal {
   const seconds = Math.min(offlineCap(s), end - start);
   const boostedSeconds = Math.min(seconds, Math.max(0, s.boostUntil - start));
   const amount = income(s, true).mul(seconds + boostedSeconds);
+  if (!s.pro) s.adIncome = s.adIncome.add(income(s, true).mul(boostedSeconds));
   s.offline = s.offline.add(amount); s.offlineSeconds += seconds;
   if (seconds > 0 && amount.gt(0)) s.offlineId++;
   s.now = end; s.savedAt = end; s.faultUntil = 0; s.faultAt = end + 25;

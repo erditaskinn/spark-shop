@@ -69,6 +69,7 @@ export function tick(s: GameState, dt = BALANCE.tick as number): void {
     if (st.progress + 1e-8 >= p.seconds) {
       const cycles = Math.floor((st.progress + 1e-8) / p.seconds);
       earn(s, stationRate(s, i).mul(p.seconds * cycles * (boosted ? 2 : 1)));
+      if (boosted && !s.pro) s.adIncome = s.adIncome.add(stationRate(s, i).mul(p.seconds * cycles));
       s.repairs += cycles; st.progress = st.manager ? Math.max(0, st.progress - cycles * p.seconds) : 0;
       if (!st.manager) st.running = false;
     }

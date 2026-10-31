@@ -19,7 +19,7 @@ export function createState(now = 0): GameState {
     zone: 0, reputation: 0, badges: 0, prestiges: 0, research: [], now, savedAt: now, seed: 73821,
     boostUntil: 0, pro: false, offline: D(0), offlineSeconds: 0, offlineId: 0,
     faultAt: now + 25, faultUntil: 0, faultComponent: 0, faults: 0, purchases: 0, repairs: 0,
-    adsWatched: 0, adIncome: D(0), lastAd: -1e12, rewarded: [], adCounts: {}, adTimes: {},
+    adsWatched: 0, adIncome: D(0), lastAd: -1e12, rewarded: [], adCounts: {}, adTimes: { chest: now, freeChest: now },
     achievements: [], missionDay: -1, missionBase: [0, 0, 0], missionClaims: [],
     loginDay: -1, loginStreak: 0, tutorial: 0,
     settings: { language: 'en', sound: true, haptics: true, motion: true, notifications: false, age: 'unknown' } };
