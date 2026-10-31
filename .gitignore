@@ -11,4 +11,5 @@ android/local.properties
 android/key.properties
 *.log
 .browser-test/
+.tools/
 artifacts/*.png

@@ -29,12 +29,12 @@ async function purchase(): Promise<void> {
 async function watch(id: PlacementId, context?: RewardContext): Promise<void> {
   if (busy || !ads.isRewardedReady(id)) return;
   const s = game.state, ticket = offerReward(s, id, context); if (!ticket) return;
-  busy = true; muteAudio(true); markAdStarted(s, ticket); analytics.track('ad_started', { placement: id }); game.emit();
+  busy = true; muteAudio(true); game.emit();
   try {
     const earned = await ads.show(id, () => {
       if (game.state !== s || !grantReward(s, ticket)) return;
       analytics.track('ad_rewarded', { placement: id }); void game.persist(); game.emit();
-    });
+    }, () => { markAdStarted(s, ticket); analytics.track('ad_started', { placement: id }); void game.persist(); });
     if (!earned) { analytics.track('ad_failed', { placement: id }); notify('adFailed'); }
     else notify('rewarded');
   } catch { analytics.track('ad_failed', { placement: id }); notify('adFailed'); }
@@ -44,7 +44,8 @@ export async function initializeServices(): Promise<void> {
   if (initialized || initializing || Date.now() < retryAfter || game.state.settings.age === 'unknown') return;
   initializing = true;
   try {
-    game.state.pro = await iap.init(); actions.price = await iap.price();
+    try { game.state.pro = await iap.init(); actions.price = await iap.price(); }
+    catch { analytics.track('store_unavailable'); actions.price = null; }
     if (game.state.pro) { collectOffline(game.state); game.state.boostUntil = Math.max(game.state.boostUntil, game.state.now + 7200); }
     await ads.init(game.state.settings.age === 'minor'); initialized = true;
   } catch { retryAfter = Date.now() + 60000; notify('adFailed'); }

@@ -7,7 +7,7 @@ export class MockAdsService implements AdsService {
   initialized = false;
   async init(): Promise<void> { this.initialized = true; this.onChange(); }
   isRewardedReady(_id: PlacementId): boolean { return this.initialized && !this.view; }
-  async show(_id: PlacementId, rewarded: () => void): Promise<boolean> {
+  async show(_id: PlacementId, rewarded: () => void, started: () => void = () => {}): Promise<boolean> {
     if (!this.initialized || this.view) return false;
     return new Promise(resolve => {
       let done = false; const start = performance.now();
@@ -16,6 +16,7 @@ export class MockAdsService implements AdsService {
         if (earned) rewarded(); this.onChange(); resolve(earned);
       };
       this.view = { remaining: 3, cancel: () => finish(false) };
+      started();
       const timer = setInterval(() => {
         if (!this.view) return;
         this.view.remaining = Math.max(0, 3 - (performance.now() - start) / 1000);

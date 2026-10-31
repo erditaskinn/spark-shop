@@ -1,7 +1,7 @@
 import type { PlacementId } from '../data/rewardedPlacements';
 export interface AdsService {
   init(underAge: boolean): Promise<void>; isRewardedReady(id: PlacementId): boolean;
-  show(id: PlacementId, rewarded: () => void): Promise<boolean>; privacyOptions(): Promise<boolean>;
+  show(id: PlacementId, rewarded: () => void, started?: () => void): Promise<boolean>; privacyOptions(): Promise<boolean>;
 }
 export interface IapService { init(): Promise<boolean>; purchase(): Promise<boolean>; restore(): Promise<boolean>; price(): Promise<string | null> }
 export interface CloudSaveService { upload(code: string): Promise<void>; download(): Promise<string | null> }

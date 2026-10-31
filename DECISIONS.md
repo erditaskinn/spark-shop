@@ -7,3 +7,4 @@
 - Research is instant; research speed-up placement is explicitly disabled because no timers exist.
 - General audience 13+; use a neutral age band choice before native ads so under-age consent flags can be applied.
 - No external art, fonts, or audio; build board illustrations with SVG/CSS and synthesize sounds.
+- M6 TypeScript, 24 tests, browser regression and Android sync passed; the long first native build continues while M7 release documents are prepared. Device verification is recorded separately after installation.

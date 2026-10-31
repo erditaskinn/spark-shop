@@ -2,14 +2,15 @@ import { spawn } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 const delay = ms => new Promise(r => setTimeout(r, ms));
+const port = 9300 + process.pid % 1000;
 const browser = spawn('C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe', [
-  '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check', '--remote-debugging-port=9223',
-  `--user-data-dir=${resolve('.browser-test')}`, 'about:blank',
+  '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check', `--remote-debugging-port=${port}`,
+  `--user-data-dir=${resolve('.browser-test', String(Date.now()))}`, 'about:blank',
 ], { windowsHide: true, stdio: 'ignore' });
-let ws, next = 0; const pending = new Map(), errors = [];
+let ws, closeBrowser, next = 0; const pending = new Map(), errors = [];
 try {
   let pages;
-  for (let i = 0; i < 50; i++) { try { pages = await (await fetch('http://127.0.0.1:9223/json')).json(); if (pages.some(p => p.type === 'page')) break; } catch {} await delay(200); }
+  for (let i = 0; i < 50; i++) { try { pages = await (await fetch(`http://127.0.0.1:${port}/json`)).json(); if (pages.some(p => p.type === 'page')) break; } catch {} await delay(200); }
   if (!pages) throw new Error('Headless browser did not start');
   ws = new WebSocket(pages.find(p => p.type === 'page').webSocketDebuggerUrl);
   await new Promise(r => ws.addEventListener('open', r, { once: true }));
@@ -18,14 +19,17 @@ try {
     if (m.id) { const p = pending.get(m.id); pending.delete(m.id); m.error ? p.reject(new Error(JSON.stringify(m.error))) : p.resolve(m.result); }
   });
   const call = (method, params = {}) => new Promise((resolve, reject) => { const id = ++next; pending.set(id, { resolve, reject }); ws.send(JSON.stringify({ id, method, params })); });
+  closeBrowser = () => call('Browser.close');
   const evaluate = async expression => {
     const r = await call('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true });
     if (r.exceptionDetails) throw new Error(JSON.stringify(r.exceptionDetails)); return r.result.value;
   };
-  const click = text => evaluate(`(() => { const b = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === ${JSON.stringify(text)}); if (!b || b.disabled) throw Error('Button unavailable: '+${JSON.stringify(text)}); b.click(); return true; })()`);
+  const click = text => evaluate(`(() => { const buttons=[...document.querySelectorAll('button')];const b = buttons.find(b => b.textContent.trim() === ${JSON.stringify(text)}); if (!b || b.disabled) throw Error('Button unavailable: '+${JSON.stringify(text)}+'; buttons='+buttons.map(b=>b.textContent).join('|')+'; text='+document.body.textContent.slice(0,300)); b.click(); return true; })()`);
   await call('Runtime.enable'); await call('Page.enable');
+  await call('Storage.clearDataForOrigin', { origin: 'http://127.0.0.1:5173', storageTypes: 'local_storage' });
   await call('Emulation.setDeviceMetricsOverride', { width: 360, height: 800, deviceScaleFactor: 1, mobile: true });
   await call('Page.navigate', { url: 'http://127.0.0.1:5173/' }); await delay(1500);
+  for (let i = 0; i < 100 && !await evaluate("!!document.querySelector('nav')"); i++) await delay(200);
   await evaluate(`(async()=>{window.g=(await import('/src/ui/controller.ts')).game;window.n=await import('/src/core/numbers.ts');g.state.settings.language='en';g.emit();})()`);
   await delay(200); await click('18 or older'); await delay(250); await click('Skip tour');
   await evaluate(`(()=>{const b=[...document.querySelectorAll('button')].find(b=>b.textContent.startsWith('Buy ×1')&&!b.disabled);if(!b)throw Error('First purchase missing');b.click();})()`);
@@ -52,4 +56,4 @@ try {
   report.overflow = await evaluate('document.documentElement.scrollWidth>360'); if (report.overflow) throw Error('Horizontal overflow at 360px');
   if (errors.length) throw Error(errors.join('\n'));
   writeFileSync('artifacts/browser-check.json', JSON.stringify(report, null, 2)); console.log(JSON.stringify(report, null, 2));
-} finally { ws?.close(); browser.kill(); }
+} finally { if (closeBrowser) await Promise.race([closeBrowser().catch(() => {}), delay(1000)]); ws?.close(); browser.kill(); }

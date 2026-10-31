@@ -1,0 +1,76 @@
+apply plugin: 'com.android.application'
+
+def productionAds = (findProperty('SPARK_PRODUCTION') ?: System.getenv('SPARK_PRODUCTION') ?: 'false').toBoolean()
+def adAppId = findProperty('ADMOB_APP_ID') ?: System.getenv('ADMOB_APP_ID') ?: 'ca-app-pub-3940256099942544~3347511713'
+def upload = new Properties()
+def uploadFile = rootProject.file('key.properties')
+if (uploadFile.exists()) uploadFile.withInputStream { upload.load(it) }
+if (productionAds && (adAppId.contains('3940256099942544') || !adAppId.matches('ca-app-pub-[0-9]{16}~[0-9]{10}'))) {
+    throw new GradleException('Configure a real ADMOB_APP_ID for production')
+}
+if (productionAds && !uploadFile.exists()) throw new GradleException('Production requires ignored android/key.properties signing configuration')
+
+android {
+    namespace = "com.sparkshop.idle"
+    compileSdk = rootProject.ext.compileSdkVersion
+    defaultConfig {
+        applicationId "com.sparkshop.idle"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName "1.0"
+        manifestPlaceholders = [ADMOB_APP_ID: adAppId]
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        aaptOptions {
+             // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
+             // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
+            ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
+        }
+    }
+    signingConfigs {
+        if (uploadFile.exists()) {
+            release {
+                storeFile file(upload['storeFile'])
+                storePassword upload['storePassword']
+                keyAlias upload['keyAlias']
+                keyPassword upload['keyPassword']
+            }
+        }
+    }
+    buildTypes {
+        release {
+            if (uploadFile.exists()) signingConfig signingConfigs.release
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+repositories {
+    flatDir{
+        dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
+    implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
+    implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
+    implementation project(':capacitor-android')
+    testImplementation "junit:junit:$junitVersion"
+    androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
+    implementation project(':capacitor-cordova-android-plugins')
+}
+
+apply from: 'capacitor.build.gradle'
+
+try {
+    def servicesJSON = file('google-services.json')
+    if (servicesJSON.text) {
+        apply plugin: 'com.google.gms.google-services'
+    }
+} catch(Exception e) {
+    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
+}

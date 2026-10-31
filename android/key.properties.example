@@ -1,0 +1,4 @@
+storeFile=C:/secure/spark-shop-upload.jks
+storePassword=REPLACE_LOCALLY
+keyAlias=spark-shop-upload
+keyPassword=REPLACE_LOCALLY
