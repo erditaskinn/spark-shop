@@ -5,13 +5,13 @@
   "files": [
     {
       "path": "android/app/build/outputs/bundle/release/app-release.aab",
-      "bytes": 16268567,
-      "sha256": "247915512c896236c8233a8e8e58b318483a74527bf090fb2470811252c33556"
+      "bytes": 16268576,
+      "sha256": "e656819045314bb985f6addedf73baa245383d4f1d4f4e0711da7a321fcd5928"
     },
     {
       "path": "android/app/build/outputs/apk/debug/app-debug.apk",
       "bytes": 19332347,
-      "sha256": "09d593fa3ba4858e48d65a6d830a71814f16330578585657d86c162f33e9413c"
+      "sha256": "0968b8e4fc6855139817a370b7bfc2c12dfef6f399a027527732ac6cf26d6a32"
     }
   ]
 }
