@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.local
+*.keystore
+*.jks
+android/.gradle/
+android/**/build/
+android/local.properties
+android/key.properties
+*.log
