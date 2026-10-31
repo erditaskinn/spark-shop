@@ -1,0 +1,50 @@
+{
+  "viewport": "360×800",
+  "manualRepair": true,
+  "placements": [
+    {
+      "id": "boost",
+      "rewards": 1
+    },
+    {
+      "id": "chest",
+      "rewards": 1
+    },
+    {
+      "id": "welcome",
+      "rewards": 1
+    },
+    {
+      "id": "skip1",
+      "rewards": 1
+    },
+    {
+      "id": "skip4",
+      "rewards": 1
+    },
+    {
+      "id": "login",
+      "rewards": 1
+    },
+    {
+      "id": "mission",
+      "rewards": 1
+    },
+    {
+      "id": "lucky",
+      "rewards": 1
+    }
+  ],
+  "screens": [
+    "Eras",
+    "Research",
+    "Reputation",
+    "More",
+    "Goals",
+    "Settings"
+  ],
+  "errors": [],
+  "mockPurchase": true,
+  "turkish": true,
+  "overflow": false
+}

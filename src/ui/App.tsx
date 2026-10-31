@@ -14,6 +14,8 @@ import { Prestige, Research, Zones } from './ProgressionScreens';
 import { Settings, type SettingsActions } from './Settings';
 import { AdButton, Offline, Shop, type RewardActions } from './Rewards';
 import { Goals } from './Goals';
+import { MockVideo } from './MockVideo';
+import { currentEvent } from '../data/meta';
 export type Screen = 'main' | 'zones' | 'research' | 'prestige' | 'more' | 'missions' | 'shop' | 'settings';
 const icons = { main: '⌁', zones: '▧', research: '⚗', prestige: '✦', more: '···' };
 export const uiBridge = { back: (): boolean => false };
@@ -30,7 +32,7 @@ export function App({ actions, settingsActions }: { actions: RewardActions; sett
       if (feedback) feedback.startsWith('+') || feedback.startsWith('−') ? setFloating(feedback) : setToast(feedback);
     } catch { setToast(t('error')); } game.emit();
   };
-  const props = { s, t, act }, rewardProps = { ...props, actions };
+  const props = { s, t, act }, rewardProps = { ...props, actions }, event = currentEvent(s.now);
   return <div class="app-shell">
     <header class="topbar"><a href="#" onClick={e => { e.preventDefault(); setScreen('main'); }} class="brand"><span class="brand-mark">ϟ</span><span>{t('game.shortTitle')}<small>{t('game.title')}</small></span></a><button class="icon-button" aria-label={t('nav.settings')} onClick={() => setScreen('settings')}>⚙</button></header>
     <div class="wallet"><div><span class="eyebrow">{t('cash')}</span><strong class="cash">{format(s.money)}</strong></div><div class="income"><span class="income-dot"/>+{format(income(s).mul(s.boostUntil > s.now ? 2 : 1))}<small>{t('income')}</small></div></div>
@@ -39,6 +41,7 @@ export function App({ actions, settingsActions }: { actions: RewardActions; sett
         {s.tutorial < 5 ? <section class="tutorial panel"><div class="section-label"><span>{t('tutorial.title')}</span><span>{s.tutorial + 1}/5</span></div><p>{t(`tutorial.${s.tutorial}`)}</p><div class="two-buttons"><button onClick={() => act(() => { s.tutorial = 5; })}>{t('tutorial.skip')}</button><button class="primary" onClick={() => act(() => { s.tutorial++; })}>{t('tutorial.next')}</button></div></section> : null}
         {!s.pro ? <div class="boost-strip"><span class="boost-icon">ϟ</span><div><b>{s.boostUntil > s.now ? t('boost.active') : t('boost')}</b><small>{s.boostUntil > s.now ? `${Math.floor((s.boostUntil - s.now) / 3600)}${t('hours')} ${Math.ceil((s.boostUntil - s.now) % 3600 / 60)}${t('minutes')}` : t('boost.note')}</small></div><AdButton {...rewardProps} id="boost"/></div> : null}
         <Stations {...props}/>
+        {event ? <div class="event-card"><span class="eyebrow">{t('event')}</span><h3>{t(event.key)}</h3><p>{t(`event.note.${event.id}`)}</p></div> : null}
         {!s.pro ? <article class="panel supply"><h3>◇ {t('supply')}</h3><p>{t('supply.choice')}</p>{s.now - (s.adTimes.freeChest ?? s.now) >= 600 ? <><button class="full" onClick={() => act(() => chestFree(s), `+${format(income(s).mul(900))}`)}>{t('supply.free')} · {format(income(s).mul(900))}</button><AdButton {...rewardProps} id="chest"/></> : <p>{t('supply.next')} {Math.ceil(Math.max(0, 600 - s.now + (s.adTimes.freeChest ?? s.now)) / 60)} {t('minutes')}</p>}</article> : null}
         <p class="flavor">{t('bench.flavor')}</p><p class="official-title">{t('game.title')}</p></> : null}
       {screen === 'zones' ? <Zones {...props}/> : null}
@@ -54,5 +57,6 @@ export function App({ actions, settingsActions }: { actions: RewardActions; sett
     {toast || game.error ? <div class="toast" role="status" onClick={() => { setToast(''); game.error = ''; }}>{toast || t(game.error)}</div> : null}
     {s.offline.gt(0) ? <Offline {...rewardProps} collect={() => act(() => collectOffline(s))}/> : null}
     {s.settings.age === 'unknown' && s.offline.eq(0) ? <div class="modal-backdrop"><section class="modal" role="dialog" aria-modal="true"><span class="brand-mark">ϟ</span><h1>{t('game.title')}</h1><h2>{t('age.title')}</h2><p>{t('age.note')}</p><div class="two-buttons"><button onClick={() => act(() => { s.settings.age = 'minor'; })}>{t('age.minor')}</button><button class="primary" onClick={() => act(() => { s.settings.age = 'adult'; })}>{t('age.adult')}</button></div></section></div> : null}
+    <MockVideo/>
   </div>;
 }

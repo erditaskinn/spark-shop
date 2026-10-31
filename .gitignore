@@ -10,3 +10,5 @@ android/**/build/
 android/local.properties
 android/key.properties
 *.log
+.browser-test/
+artifacts/*.png

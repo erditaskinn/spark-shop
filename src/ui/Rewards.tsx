@@ -4,9 +4,12 @@ import { adEligible, type RewardContext } from '../core/rewards';
 import { format } from '../core/numbers';
 import { income } from '../core/economy';
 import type { ScreenProps } from './types';
-export interface RewardActions { ready: (id: PlacementId) => boolean; watch: (id: PlacementId, context?: RewardContext) => void; buyPro: () => void; price: string | null }
+import { useEffect } from 'preact/hooks';
+export interface RewardActions { ready: (id: PlacementId) => boolean; watch: (id: PlacementId, context?: RewardContext) => void; buyPro: () => void; price: string | null; offered: (id: PlacementId) => void }
 export function AdButton({ s, t, actions, id, context }: ScreenProps & { actions: RewardActions; id: PlacementId; context?: RewardContext }) {
-  if (!actions.ready(id) || !adEligible(s, id, context)) return null;
+  const visible = actions.ready(id) && adEligible(s, id, context);
+  useEffect(() => { if (visible) actions.offered(id); }, [visible, id]);
+  if (!visible) return null;
   const p = placement(id), amount = income(s).mul(60 * (context?.minutes ?? p.minutes));
   return <button class="ad-button" onClick={() => actions.watch(id, context)}>▷ {t(`ad.label.${id}`)}{p.type === 'income' || p.type === 'claim' ? <small>+{format(amount)}</small> : null}</button>;
 }

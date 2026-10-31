@@ -1,5 +1,6 @@
 import { BALANCE } from '../data/balance';
 import { producers, managers } from '../data/content';
+import { currentEvent } from '../data/meta';
 import { D, Decimal } from './numbers';
 import type { GameState } from './state';
 export type BuyMode = 1 | 10 | 100 | 'max';
@@ -13,7 +14,9 @@ export function stationRate(s: GameState, id: number): Decimal {
   if (!p || !st || p.zone > s.zone) return D(0);
   const milestones = BALANCE.milestones.filter(n => st.owned >= n).length;
   const zoneMilestones = [25, 50, 100].filter(n => s.stations.slice(p.zone * 6, p.zone * 6 + 6).every(x => x.owned >= n)).length;
-  return D(p.baseCost).div(BALANCE.payback).mul(st.owned).mul(2 ** (milestones + zoneMilestones)).mul(globalMultiplier(s));
+  const event = currentEvent(s.now);
+  return D(p.baseCost).div(BALANCE.payback).mul(st.owned).mul(2 ** (milestones + zoneMilestones)).mul(globalMultiplier(s))
+    .mul(event?.income ?? 1).mul(st.manager ? event?.managed ?? 1 : 1);
 }
 export function income(s: GameState, automated = false): Decimal {
   let total = D(0);

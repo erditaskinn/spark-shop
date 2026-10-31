@@ -1,6 +1,7 @@
 import { BALANCE } from '../data/balance';
 import { zones } from '../data/content';
 import { research } from '../data/research';
+import { currentEvent } from '../data/meta';
 import { earn, income, researchCount } from './economy';
 import { D, Decimal } from './numbers';
 import { createState, random, type GameState } from './state';
@@ -32,9 +33,17 @@ export function settleOffline(s: GameState, wallNow: number): Decimal {
   if (!Number.isFinite(wallNow)) return D(0);
   const start = s.savedAt, end = Math.max(start, wallNow);
   const seconds = Math.min(offlineCap(s), end - start);
-  const boostedSeconds = Math.min(seconds, Math.max(0, s.boostUntil - start));
-  const amount = income(s, true).mul(seconds + boostedSeconds);
-  if (!s.pro) s.adIncome = s.adIncome.add(income(s, true).mul(boostedSeconds));
+  let amount = D(0), boostExtra = D(0), cursor = start;
+  const previousNow = s.now;
+  while (cursor < start + seconds) {
+    const next = Math.min(start + seconds, (Math.floor(cursor / 86400) + 1) * 86400, s.boostUntil > cursor ? s.boostUntil : Infinity);
+    s.now = cursor; const base = income(s, true).mul(next - cursor);
+    amount = amount.add(base.mul(s.boostUntil > cursor ? 2 : 1));
+    if (s.boostUntil > cursor) boostExtra = boostExtra.add(base);
+    cursor = next;
+  }
+  s.now = previousNow;
+  if (!s.pro) s.adIncome = s.adIncome.add(boostExtra);
   s.offline = s.offline.add(amount); s.offlineSeconds += seconds;
   if (seconds > 0 && amount.gt(0)) s.offlineId++;
   s.now = end; s.savedAt = end; s.faultUntil = 0; s.faultAt = end + 25;
@@ -48,7 +57,7 @@ export function updateFault(s: GameState): void {
   if (s.faultUntil && s.now >= s.faultUntil) s.faultUntil = 0;
   if (s.now >= s.faultAt) {
     s.faultComponent = Math.floor(random(s) * (s.zone >= 4 ? 5 : 4));
-    s.faultUntil = s.now + 3; s.faultAt = s.now + 20 + random(s) * 20;
+    s.faultUntil = s.now + 3; s.faultAt = s.now + 20 + random(s) * ((currentEvent(s.now)?.faultInterval ?? 40) - 20);
   }
 }
 export function catchFault(s: GameState): Decimal {

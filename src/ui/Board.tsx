@@ -16,7 +16,7 @@ export function Board({ s, t, onFault }: { s: GameState; t: T; onFault: () => vo
       <g><rect x="63" y="31" width="39" height="17" rx="5" fill="#c4a984"/><path d="M73 31v17m9-17v17m10-17v17" stroke="#ad552b" strokeWidth="4"/>
         <ellipse cx="270" cy="94" rx="14" ry="6" fill="#81a6ae"/><path d="M256 94v26q14 11 28 0V94" fill="#365a65"/><ellipse cx="270" cy="94" rx="14" ry="6" fill="#b7c4b5"/>
         <rect x="68" y="112" width="45" height="14" rx="6" fill="#a8b3a7"/><rect x="76" y="113" width="28" height="12" fill="#ece0b4"/></g>
-      <path d="M295 150l40-20 20 35" stroke="#cc945a" strokeWidth="12" strokeLinecap="round"/><path d="M295 150l-17 8" stroke="#c1cbc4" strokeWidth="5"/>
+      <path d="M295 150l40-20 20 35" fill="none" stroke="#cc945a" strokeWidth="12" strokeLinecap="round"/><path d="M295 150l-17 8" fill="none" stroke="#c1cbc4" strokeWidth="5"/>
     </svg>
     {fault ? <button class={`fault-target target-${s.faultComponent}`} onClick={onFault} aria-label={`${t('fault')}: ${t(`fault.${s.faultComponent}`)}`}>✦</button> : null}
     <div class="board-caption"><span>{fault ? t(`fault.${s.faultComponent}`) : t('bench.note')}</span><span class={fault ? 'amber' : ''}>{fault ? `${Math.ceil(s.faultUntil - s.now)}s` : '✧'}</span></div>
