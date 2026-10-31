@@ -37,6 +37,23 @@ Android SDK 36. No production ad credentials or upload key are present.
   from production output. The AAB contains zero native `.so` libraries and zero
   signing certificates; publisher signing and API 36 device validation remain.
 
+## Reference design update
+
+- User's supplied image is now the shared visual theme: textured green panels,
+  cream serif headings, gold buttons, illustrated device cards and SVG navigation.
+- All 30 devices have raster illustrations. The first three use the supplied
+  reference; later devices use a generated atlas. A new text-free board background
+  supports the existing interactive Fault Hunt targets.
+- Typecheck, 25 tests, source lint and browser regression pass. Real browser
+  captures cover 360×800 and 414×920 main layouts plus Eras, Research, Prestige,
+  Goals, Shop and Settings. The preview amounts are deliberate local test fixtures;
+  the actual phone save/economy are not replaced with those values.
+- Updated AAB and debug APK build successfully; updated APK installed on the
+  connected Android 11 phone retaining its existing save. Existing monetization
+  services and core economy were not changed by the visual redesign.
+- Generation prompts and project asset paths are recorded in ASSETS.md and
+  artifacts/art-prompts.md. Store creative exports remain a separate release step.
+
 ## Practical limits
 
 - Simulation is an assumed greedy strategy, not human pacing, retention or revenue.

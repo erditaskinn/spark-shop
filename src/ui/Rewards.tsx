@@ -5,14 +5,15 @@ import { format } from '../core/numbers';
 import { income } from '../core/economy';
 import type { ScreenProps } from './types';
 import { useEffect } from 'preact/hooks';
+import { Icon } from './Icon';
 export interface RewardActions { ready: (id: PlacementId) => boolean; watch: (id: PlacementId, context?: RewardContext) => void; buyPro: () => void; price: string | null; offered: (id: PlacementId) => void }
-export function AdButton({ s, t, actions, id, context }: ScreenProps & { actions: RewardActions; id: PlacementId; context?: RewardContext }) {
+export function AdButton({ s, t, actions, id, context, compact = false }: ScreenProps & { actions: RewardActions; id: PlacementId; context?: RewardContext; compact?: boolean }) {
   const visible = actions.ready(id) && adEligible(s, id, context);
   useEffect(() => { if (visible) actions.offered(id); }, [visible, id]);
   if (!visible) return null;
   const p = placement(id), amount = income(s).mul(60 * (context?.minutes ?? p.minutes));
   const label = id === 'boost' ? t('ad.boostDuration').replace('{duration}', `${Math.floor(boostAwardSeconds(s) / 60)} ${t('minutes')}`) : t(`ad.label.${id}`);
-  return <button class="ad-button" data-placement={id} onClick={() => actions.watch(id, context)}>▷ {label}{p.type === 'income' || p.type === 'claim' ? <small>+{format(amount)}</small> : null}</button>;
+  return <button class={`ad-button ${compact ? 'compact-ad' : ''}`} data-placement={id} aria-label={label} title={label} onClick={() => actions.watch(id, context)}><Icon name="play"/>{compact && id === 'boost' ? `+${Math.floor(boostAwardSeconds(s) / 60)} ${t('minutes')}` : label}{p.type === 'income' || p.type === 'claim' ? <small>+{format(amount)}</small> : null}</button>;
 }
 export function Shop(props: ScreenProps & { actions: RewardActions }) {
   const { s, t, actions } = props;

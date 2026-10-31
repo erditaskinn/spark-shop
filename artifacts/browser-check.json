@@ -48,5 +48,6 @@
   "secondCycleEra": true,
   "mockPurchase": true,
   "turkish": true,
-  "overflow": false
+  "overflow": false,
+  "referenceTheme": true
 }

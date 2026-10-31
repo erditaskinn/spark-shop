@@ -239,5 +239,16 @@
   "manager.27": "Hearthlink Hub manager",
   "manager.28": "Sunweave Inverter manager",
   "manager.29": "Gridguard Power System manager",
-  "ad.boostDuration": "Video: +{duration} ×2 income"
+  "ad.boostDuration": "Video: +{duration} ×2 income",
+  "stations.title": "Repair stations",
+  "station.open": "Open station",
+  "station.upgrade": "Upgrade",
+  "station.working": "Manager working",
+  "fault.short": "Fault Hunt",
+  "board.description": "An electronics workbench with copper traces, resistors, capacitors and a soldering iron.",
+  "era.0": "1980s",
+  "era.1": "1990s",
+  "era.2": "2000s",
+  "era.3": "2010s",
+  "era.4": "2020s"
 }

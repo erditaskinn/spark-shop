@@ -33,8 +33,8 @@ try {
   await evaluate(`(async()=>{window.g=window.__sparkTest.game;window.a=window.__sparkTest.actions;window.n=await import('/src/core/numbers.ts');g.state.settings.language='en';g.emit();})()`);
   for (let i = 0; i < 50; i++) { await evaluate("g.state.settings.language='en';g.emit()"); await delay(100); if (await evaluate("document.body.textContent.includes('18 or older')")) break; }
   await click('18 or older'); await delay(250); await click('Skip tour');
-  await evaluate(`(()=>{const b=[...document.querySelectorAll('button')].find(b=>b.textContent.startsWith('Buy ×1')&&!b.disabled);if(!b)throw Error('First purchase missing');b.click();})()`);
-  await click('⌁ Repair'); await delay(2200);
+  await evaluate(`(()=>{const b=document.querySelector('button[data-buy="0"]');if(!b||b.disabled)throw Error('First purchase missing');b.click();})()`);
+  await evaluate(`document.querySelector('button[data-repair="0"]').click()`); await delay(2200);
   const repairs = await evaluate('g.state.repairs'); if (repairs < 1) throw Error('Manual repair did not pay');
   const report = { viewport: '360×800', manualRepair: true, placements: [], screens: [], errors };
   mkdirSync('artifacts', { recursive: true });
@@ -62,6 +62,26 @@ try {
   await evaluate(`(()=>{const select=[...document.querySelectorAll('select')].find(s=>s.querySelector('option[value=tr]'));select.value='tr';select.dispatchEvent(new Event('change',{bubbles:true}));})()`); await delay(150);
   if (!await evaluate(`document.body.textContent.includes('Ayarlar')`)) throw Error('Turkish switch failed'); report.turkish = true;
   report.overflow = await evaluate('document.documentElement.scrollWidth>360'); if (report.overflow) throw Error('Horizontal overflow at 360px');
+  if (process.argv.includes('--visual')) {
+    await evaluate(`(async()=>{const make=(await import('/src/core/state.ts')).createState;g.paused=true;g.error='';g.state=make(Date.now()/1000);const s=g.state;s.settings.language='tr';s.settings.age='adult';s.tutorial=5;s.money=n.D(12450);s.badges=24;s.boostUntil=s.now+6120;s.stations[0]={owned:25,manager:true,progress:0.8,running:false};s.stations[1]={owned:12,manager:false,progress:1.4,running:false};s.faultUntil=s.now+3;s.faultComponent=0;g.emit();document.querySelector('nav button').click();await Promise.all(['/art/repair-board.png','/art/device-atlas.png','/art/shop-reference.png'].map(src=>new Promise((resolve,reject)=>{const i=new Image();i.onload=resolve;i.onerror=reject;i.src=src;})));})()`);
+    await delay(300);
+    writeFileSync('artifacts/reference-main-360.png', Buffer.from((await call('Page.captureScreenshot', { format: 'png' })).data, 'base64'));
+    await call('Emulation.setDeviceMetricsOverride', { width: 414, height: 920, deviceScaleFactor: 1, mobile: true }); await delay(150);
+    writeFileSync('artifacts/reference-main-414.png', Buffer.from((await call('Page.captureScreenshot', { format: 'png' })).data, 'base64'));
+    await call('Emulation.setDeviceMetricsOverride', { width: 360, height: 800, deviceScaleFactor: 1, mobile: true });
+    for (const [index,name] of [[1,'zones'],[2,'research'],[3,'prestige']]) {
+      await evaluate(`document.querySelectorAll('nav button')[${index}].click()`); await delay(150);
+      if (await evaluate('document.documentElement.scrollWidth>360')) throw Error(name+' overflows');
+      writeFileSync('artifacts/reference-'+name+'.png', Buffer.from((await call('Page.captureScreenshot', { format: 'png' })).data, 'base64'));
+    }
+    await evaluate(`document.querySelector('nav button:last-child').click()`); await delay(100); await click('Hedefler →'); await delay(150);
+    writeFileSync('artifacts/reference-goals.png', Buffer.from((await call('Page.captureScreenshot', { format: 'png' })).data, 'base64'));
+    await evaluate(`document.querySelector('nav button:last-child').click()`); await delay(100); await click('Dükkan →'); await delay(150);
+    writeFileSync('artifacts/reference-shop.png', Buffer.from((await call('Page.captureScreenshot', { format: 'png' })).data, 'base64'));
+    await evaluate(`document.querySelector('nav button:last-child').click()`); await delay(100); await click('Ayarlar →'); await delay(150);
+    writeFileSync('artifacts/reference-settings.png', Buffer.from((await call('Page.captureScreenshot', { format: 'png' })).data, 'base64'));
+    report.referenceTheme = true;
+  }
   if (errors.length) throw Error(errors.join('\n'));
   writeFileSync('artifacts/browser-check.json', JSON.stringify(report, null, 2)); console.log(JSON.stringify(report, null, 2));
 } finally { if (closeBrowser) await Promise.race([closeBrowser().catch(() => {}), delay(1000)]); ws?.close(); browser.kill(); }

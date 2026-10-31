@@ -2,6 +2,7 @@ import { render } from 'preact';
 import { App } from './ui/App';
 import { game } from './ui/controller';
 import './ui/styles.css';
+import './ui/reference-theme.css';
 import { actions, initializeServices, settingsActions } from './platform/runtime';
 import { scheduleNotification } from './platform/notifications';
 import { installNative } from './platform/native';

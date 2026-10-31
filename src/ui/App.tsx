@@ -16,9 +16,10 @@ import { AdButton, Offline, Shop, type RewardActions } from './Rewards';
 import { Goals } from './Goals';
 import { MockVideo } from './MockVideo';
 import { currentEvent } from '../data/meta';
-import { RollingMoney } from './RollingMoney';
+import { Icon, type IconName } from './Icon';
+import { Wallet } from './Wallet';
 export type Screen = 'main' | 'zones' | 'research' | 'prestige' | 'more' | 'missions' | 'shop' | 'settings';
-const icons = { main: '⌁', zones: '▧', research: '⚗', prestige: '✦', more: '···' };
+const icons: Record<'main' | 'zones' | 'research' | 'prestige' | 'more', IconName> = { main: 'wrench', zones: 'layers', research: 'flask', prestige: 'star', more: 'menu' };
 export const uiBridge = { back: (): boolean => false };
 export function App({ actions, settingsActions }: { actions: RewardActions; settingsActions: SettingsActions }) {
   const [, refresh] = useState(0), [screen, setScreen] = useState<Screen>('main'), [toast, setToast] = useState(''), [floating, setFloating] = useState('');
@@ -39,12 +40,12 @@ export function App({ actions, settingsActions }: { actions: RewardActions; sett
   };
   const props = { s, t, act }, rewardProps = { ...props, actions }, event = currentEvent(s.now);
   return <div class="app-shell">
-    <header class="topbar"><a href="#" onClick={e => { e.preventDefault(); setScreen('main'); }} class="brand"><span class="brand-mark">ϟ</span><span>{t('game.shortTitle')}<small>{t('game.title')}</small></span></a><button class="icon-button" aria-label={t('nav.settings')} onClick={() => setScreen('settings')}>⚙</button></header>
-    <div class="wallet"><div><span class="eyebrow">{t('cash')}</span><strong class="cash"><RollingMoney value={s.money} motion={s.settings.motion}/></strong></div><div class="income"><span class="income-dot"/>+{format(income(s).mul(s.boostUntil > s.now ? 2 : 1))}<small>{t('income')}</small></div></div>
+    <header class="topbar"><a href="#" onClick={e => { e.preventDefault(); setScreen('main'); }} class="brand"><Icon name="chip"/><span>{t('game.shortTitle')}<small>{t('game.title')}</small></span></a><button class="icon-button" aria-label={t('nav.settings')} onClick={() => setScreen('settings')}><Icon name="settings"/></button></header>
+    <Wallet s={s} t={t}/>
     <main id="main-content">
-      {screen === 'main' ? <><div class="greeting"><span>{t('tagline')}</span><span>✧ {s.badges}</span></div><Board {...props} onFault={() => act(() => { const amount = catchFault(s); if (amount.gt(0)) { setFloating(`+${format(amount)}`); playSound(s.settings.sound, true); } })}/>
+      {screen === 'main' ? <><Board {...props} onFault={() => act(() => { const amount = catchFault(s); if (amount.gt(0)) { setFloating(`+${format(amount)}`); playSound(s.settings.sound, true); } })}/>
         {s.tutorial < 5 ? <section class="tutorial panel"><div class="section-label"><span>{t('tutorial.title')}</span><span>{s.tutorial + 1}/5</span></div><p>{t(`tutorial.${s.tutorial}`)}</p><div class="two-buttons"><button onClick={() => act(() => { s.tutorial = 5; })}>{t('tutorial.skip')}</button><button class="primary" onClick={() => act(() => { s.tutorial++; })}>{t('tutorial.next')}</button></div></section> : null}
-        {!s.pro ? <div class="boost-strip"><span class="boost-icon">ϟ</span><div><b>{s.boostUntil > s.now ? t('boost.active') : t('boost')}</b><small>{s.boostUntil > s.now ? `${Math.floor((s.boostUntil - s.now) / 3600)}${t('hours')} ${Math.ceil((s.boostUntil - s.now) % 3600 / 60)}${t('minutes')}` : t('boost.note')}</small></div><AdButton {...rewardProps} id="boost"/></div> : null}
+        {!s.pro ? <div class="boost-strip"><span class="boost-icon"><Icon name="clock"/></span><div class="boost-copy"><b>{t('boost')}</b><small>{s.boostUntil > s.now ? `×2 · ${Math.floor((s.boostUntil - s.now) / 3600)} ${t('hours')} ${Math.ceil((s.boostUntil - s.now) % 3600 / 60)} ${t('minutes')}` : t('boost.note')}</small></div><AdButton {...rewardProps} id="boost" compact/></div> : null}
         <Stations {...props}/>
         {event ? <div class="event-card"><span class="eyebrow">{t('event')}</span><h3>{t(event.key)}</h3><p>{t(`event.note.${event.id}`)}</p></div> : null}
         {!s.pro ? <article class="panel supply"><h3>◇ {t('supply')}</h3><p>{t('supply.choice')}</p>{s.now - (s.adTimes.freeChest ?? s.now) >= 600 ? <><button class="full" onClick={() => act(() => chestFree(s), `+${format(income(s).mul(900))}`)}>{t('supply.free')} · {format(income(s).mul(900))}</button><AdButton {...rewardProps} id="chest"/></> : <p>{t('supply.next')} {Math.ceil(Math.max(0, 600 - s.now + (s.adTimes.freeChest ?? s.now)) / 60)} {t('minutes')}</p>}</article> : null}
@@ -57,11 +58,11 @@ export function App({ actions, settingsActions }: { actions: RewardActions; sett
       {screen === 'settings' ? <Settings {...props} actions={settingsActions}/> : null}
       {screen === 'more' ? <section class="page"><h2>{t('nav.more')}</h2>{(['missions', 'shop', 'settings'] as const).map(x => <button class="menu-card" onClick={() => setScreen(x)}>{t(`nav.${x}`)} <span>→</span></button>)}<div class="panel"><p>{t('total')}: {format(s.lifetime)}</p><p>{t('reputation')}: {format(s.reputation)}</p></div></section> : null}
     </main>
-    <nav class="bottom-nav" aria-label={t('game.shortTitle')}>{(['main', 'zones', 'research', 'prestige', 'more'] as const).map(x => <button class={screen === x || (x === 'more' && ['missions', 'shop', 'settings'].includes(screen)) ? 'active' : ''} onClick={() => setScreen(x)}><span>{icons[x]}</span>{t(`nav.${x}`)}</button>)}</nav>
+    <nav class="bottom-nav" aria-label={t('game.shortTitle')}>{(['main', 'zones', 'research', 'prestige', 'more'] as const).map(x => <button class={screen === x || (x === 'more' && ['missions', 'shop', 'settings'].includes(screen)) ? 'active' : ''} onClick={() => setScreen(x)}><Icon name={icons[x]}/><span>{t(`nav.${x}`)}</span></button>)}</nav>
     {floating ? <div class="floating-number" key={floating}>{floating}</div> : null}
     {toast || game.error ? <div class="toast" role="status" onClick={() => { setToast(''); game.error = ''; }}>{toast || t(game.error)}</div> : null}
     {s.offline.gt(0) ? <Offline {...rewardProps} collect={() => act(() => collectOffline(s))}/> : null}
-    {s.settings.age === 'unknown' && s.offline.eq(0) ? <div class="modal-backdrop"><section class="modal" role="dialog" aria-modal="true"><span class="brand-mark">ϟ</span><h1>{t('game.title')}</h1><h2>{t('age.title')}</h2><p>{t('age.note')}</p><div class="two-buttons"><button onClick={() => act(() => { s.settings.age = 'minor'; })}>{t('age.minor')}</button><button class="primary" onClick={() => act(() => { s.settings.age = 'adult'; })}>{t('age.adult')}</button></div></section></div> : null}
+    {s.settings.age === 'unknown' && s.offline.eq(0) ? <div class="modal-backdrop"><section class="modal" role="dialog" aria-modal="true"><Icon name="chip" className="welcome-chip"/><h1>{t('game.title')}</h1><h2>{t('age.title')}</h2><p>{t('age.note')}</p><div class="two-buttons"><button onClick={() => act(() => { s.settings.age = 'minor'; })}>{t('age.minor')}</button><button class="primary" onClick={() => act(() => { s.settings.age = 'adult'; })}>{t('age.adult')}</button></div></section></div> : null}
     <MockVideo/>
   </div>;
 }

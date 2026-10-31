@@ -1,16 +1,17 @@
 {
+  "theme": "user-reference",
   "testAds": true,
   "releaseSigned": false,
   "files": [
     {
       "path": "android/app/build/outputs/bundle/release/app-release.aab",
-      "bytes": 9195192,
-      "sha256": "2da6ac1b3032d2e94782ad2a7ec999385ca0498baa0a4e18a646e46c2c7f2e41"
+      "bytes": 16268567,
+      "sha256": "247915512c896236c8233a8e8e58b318483a74527bf090fb2470811252c33556"
     },
     {
       "path": "android/app/build/outputs/apk/debug/app-debug.apk",
-      "bytes": 12038981,
-      "sha256": "f1f5a6a146a4e1033e14102ce03825c08835b422e79b73bd6858bcc98571cc9a"
+      "bytes": 19332347,
+      "sha256": "09d593fa3ba4858e48d65a6d830a71814f16330578585657d86c162f33e9413c"
     }
   ]
 }

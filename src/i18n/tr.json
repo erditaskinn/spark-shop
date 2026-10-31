@@ -239,5 +239,16 @@
   "manager.27": "Hearthlink Ev Merkezi ustası",
   "manager.28": "Sunweave İnvertör ustası",
   "manager.29": "Gridguard Güç Sistemi ustası",
-  "ad.boostDuration": "Video: +{duration} ×2 kazanç"
+  "ad.boostDuration": "Video: +{duration} ×2 kazanç",
+  "stations.title": "Tamir istasyonları",
+  "station.open": "İstasyon aç",
+  "station.upgrade": "Geliştir",
+  "station.working": "Usta çalışıyor",
+  "fault.short": "Arıza Avı",
+  "board.description": "Bakır yollar, dirençler, kondansatörler ve havya bulunan elektronik tamir tezgahı.",
+  "era.0": "1980’ler",
+  "era.1": "1990’lar",
+  "era.2": "2000’ler",
+  "era.3": "2010’lar",
+  "era.4": "2020’ler"
 }
