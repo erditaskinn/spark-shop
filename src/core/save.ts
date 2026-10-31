@@ -13,21 +13,22 @@ export function deserialize(text: string, now: number): GameState {
     for (const k of ['zone', 'reputation', 'badges', 'prestiges', 'seed', 'boostUntil', 'savedAt', 'faultAt', 'faultUntil', 'faultComponent', 'faults', 'purchases', 'repairs', 'adsWatched', 'offlineSeconds', 'offlineId', 'tutorial', 'loginStreak'] as const) {
       if (r[k] !== undefined) s[k] = integer(r[k]);
     }
-    s.zone = Math.min(4, s.zone); s.tutorial = Math.min(5, s.tutorial); s.loginStreak %= 7;
+    s.zone = Math.min(4, s.zone); s.tutorial = Math.min(5, s.tutorial); s.loginStreak %= 7; s.faultComponent %= 5;
     s.now = Math.max(s.savedAt, now); s.boostUntil = Math.min(s.boostUntil, s.now + 8 * 3600);
-    for (const k of ['loginDay', 'missionDay', 'lastAd'] as const) if (typeof r[k] === 'number' && Number.isFinite(r[k])) s[k] = r[k];
+    for (const k of ['loginDay', 'missionDay', 'lastAd'] as const) if (typeof r[k] === 'number' && Number.isFinite(r[k])) s[k] = Math.min(r[k], k === 'lastAd' ? s.now : Math.floor(s.now / 86400));
     if (Array.isArray(r.stations)) r.stations.slice(0, 30).forEach((v, i) => {
       if (!v || typeof v !== 'object') return;
       s.stations[i] = { owned: integer(v.owned, 10000), manager: v.manager === true,
         progress: Math.min(11.99, integer(v.progress)), running: v.running === true };
     });
+    if (!s.stations.slice(0, (s.zone + 1) * 6).some(st => st.owned > 0) && s.money.lt(10)) s.stations[0].owned = 1;
     for (const [k, max] of [['research', 40], ['achievements', 50], ['missionClaims', 3]] as const) {
       const list = r[k]; if (Array.isArray(list)) s[k] = [...new Set(list.filter((v): v is number => Number.isInteger(v) && v >= 0 && v < max))];
     }
     if (Array.isArray(r.missionBase)) s.missionBase = [0, 1, 2].map(i => integer((r.missionBase as unknown[])[i]));
     if (Array.isArray(r.rewarded)) s.rewarded = r.rewarded.filter((v): v is string => typeof v === 'string').slice(-256);
     for (const k of ['adCounts', 'adTimes'] as const) if (r[k] && typeof r[k] === 'object') {
-      for (const [id, v] of Object.entries(r[k] as object).slice(-100)) if (/^[a-z0-9:_-]+$/i.test(id)) s[k][id] = integer(v);
+      for (const [id, v] of Object.entries(r[k] as object).slice(-100)) if (/^[a-z0-9:_-]+$/i.test(id)) s[k][id] = Math.min(integer(v), k === 'adTimes' ? s.now : 1e12);
     }
     if (r.settings && typeof r.settings === 'object') {
       const x = r.settings as Record<string, unknown>;
@@ -48,7 +49,7 @@ export async function save(s: GameState, storage: SaveStorage): Promise<void> {
 export async function load(storage: SaveStorage, now: number): Promise<GameState> {
   for (const key of ['save', 'backup']) {
     const raw = await storage.get(key);
-    if (raw) try { const parsed: unknown = JSON.parse(raw); if (parsed && typeof parsed === 'object') return deserialize(raw, now); } catch { /* try backup */ }
+    if (raw) try { const parsed: unknown = JSON.parse(raw); if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && ('money' in parsed || 'cash' in parsed)) return deserialize(raw, now); } catch { /* try backup */ }
   }
   return createState(now);
 }

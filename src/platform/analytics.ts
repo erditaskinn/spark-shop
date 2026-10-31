@@ -1,6 +1,12 @@
 import type { Analytics } from './contracts';
 export class LocalAnalytics implements Analytics {
   events: { time: number; event: string; properties: Record<string, string | number> }[] = [];
+  constructor() {
+    try {
+      const previous: unknown = JSON.parse(localStorage.getItem('spark:analytics') ?? '[]');
+      if (Array.isArray(previous)) this.events = previous.filter(e => e && typeof e === 'object' && typeof e.event === 'string' && Number.isFinite(e.time) && e.properties && typeof e.properties === 'object').slice(-500);
+    } catch { /* An absent or damaged local log never prevents play. */ }
+  }
   track(event: string, properties: Record<string, string | number> = {}): void {
     this.events.push({ time: Date.now(), event, properties }); this.events = this.events.slice(-500);
     try { localStorage.setItem('spark:analytics', JSON.stringify(this.events)); } catch { /* Diagnostics must not block play. */ }

@@ -1,0 +1,16 @@
+{
+  "testAds": true,
+  "releaseSigned": false,
+  "files": [
+    {
+      "path": "android/app/build/outputs/bundle/release/app-release.aab",
+      "bytes": 9195192,
+      "sha256": "2da6ac1b3032d2e94782ad2a7ec999385ca0498baa0a4e18a646e46c2c7f2e41"
+    },
+    {
+      "path": "android/app/build/outputs/apk/debug/app-debug.apk",
+      "bytes": 12038981,
+      "sha256": "f1f5a6a146a4e1033e14102ce03825c08835b422e79b73bd6858bcc98571cc9a"
+    }
+  ]
+}

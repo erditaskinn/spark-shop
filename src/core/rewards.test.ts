@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 import { createState } from './state';
-import { adEligible, grantReward, markAdStarted, offerReward } from './rewards';
+import { adEligible, boostAwardSeconds, grantReward, markAdStarted, offerReward } from './rewards';
 import { D } from './numbers';
 test('only rewarded callbacks grant once and impressions respect global gap', () => {
   const s = createState(); s.now = 600; const t = offerReward(s, 'chest')!; const before = s.money;
@@ -12,6 +12,7 @@ test('only rewarded callbacks grant once and impressions respect global gap', ()
 });
 test('boost stacks within eight hours and daily caps enforced', () => {
   const s = createState(); s.boostUntil = 28000; const t = offerReward(s, 'boost')!;
+  expect(boostAwardSeconds(s)).toBe(800);
   markAdStarted(s, t); grantReward(s, t); expect(s.boostUntil).toBe(28800);
   s.now = 7200; s.adCounts['0:boost'] = 4; expect(adEligible(s, 'boost')).toBe(false);
 });

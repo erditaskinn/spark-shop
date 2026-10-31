@@ -1,7 +1,7 @@
 import { useState } from 'preact/hooks';
 import { affordable, buy, cost, hire, managerCost, startRepair, stationRate, type BuyMode } from '../core/economy';
 import { format } from '../core/numbers';
-import { producers } from '../data/content';
+import { managers, producers } from '../data/content';
 import { BALANCE } from '../data/balance';
 import type { ScreenProps } from './types';
 const icons = ['◉', '▣', '▤', '⌁', '◎', '▥'];
@@ -21,7 +21,7 @@ export function Stations({ s, t, act }: ScreenProps) {
         <div class="progress"><div style={{ width: `${st.progress / p.seconds * 100}%` }}/></div>
         <div class="station-actions"><button class="repair-button" disabled={!st.owned || st.manager || st.running} onClick={() => act(() => startRepair(s, p.id))}>{st.manager ? `↻ ${t('automated')}` : st.running ? t('running') : `⌁ ${t('repair')}`}</button>
           <button class="buy-button" disabled={s.money.lt(price) || !count} onClick={() => act(() => buy(s, p.id, mode), `−${format(price)}`)}><span>{t('buy')} {mode === 'max' ? count : `×${mode}`}</span><strong>{format(price)}</strong></button></div>
-        {st.owned > 0 && !st.manager ? <button class="manager-button" disabled={s.money.lt(managerCost(s, p.id))} onClick={() => act(() => hire(s, p.id))}>♙ {t('hire')} <strong>{format(managerCost(s, p.id))}</strong></button> : null}
+        {st.owned > 0 && !st.manager ? <button class="manager-button" aria-label={`${t('hire')}: ${t(managers[p.id].key)}, ${format(managerCost(s, p.id))}`} disabled={s.money.lt(managerCost(s, p.id))} onClick={() => act(() => hire(s, p.id))}>♙ {t('hire')} <strong>{format(managerCost(s, p.id))}</strong></button> : null}
         {next ? <div class="milestone-note">{t('next')}: {next} → ×2</div> : <div class="milestone-note">✦ {t('complete')}</div>}
       </article>;
     })}</div>

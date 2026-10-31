@@ -2,7 +2,7 @@
 
 Run `npm run sim`. The bot uses the same core functions as the UI, buys the best
 affordable marginal payback, hires managers, repairs manually while active,
-collects free supply drops and taps faults. It waits for 50 incremental Reputation
+collects free supply drops and taps faults. It waits for 100 incremental Reputation
 (or 50% of existing Reputation) before resetting, so a reset feels useful.
 
 Two separate experiments avoid confusing active minutes with calendar time:
@@ -13,8 +13,9 @@ Two separate experiments avoid confusing active minutes with calendar time:
   offered during a session, respecting readiness, unlocks, caps and 30-second gap.
 
 Measured with achievements, research, daily rewards and events enabled: first
-purchase 0s; manager 26s; eras unlock at 601s, 1087s, 1238s and 1333s.
-First substantial prestige at 2662s (44.4min); next loops 1974s and 1601s.
+purchase 0s; manager 26s; eras unlock at 601s, 1110s, 1250s and 1347s.
+First substantial prestige at 2982s (49.7min); next loops 1225s and 1195s
+(about 2.4–2.5 times faster than the opening run).
 Early resets with only one Reputation are possible, but discouraged
 in the UI. Later loops speed up with Reputation and permanent research.
 

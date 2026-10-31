@@ -4,7 +4,9 @@ import { currentEvent } from '../data/meta';
 import { D, Decimal } from './numbers';
 import type { GameState } from './state';
 export type BuyMode = 1 | 10 | 100 | 'max';
-export function researchCount(s: GameState, kind: number): number { return s.research.filter(id => Math.floor(id / 8) === kind).length; }
+export function researchCount(s: GameState, kind: number): number {
+  let count = 0; for (const id of s.research) if (Math.floor(id / 8) === kind) count++; return count;
+}
 export function globalMultiplier(s: GameState): number {
   return (1 + s.reputation * BALANCE.reputationBonus) * BALANCE.zoneMultiplier ** s.zone *
     1.15 ** researchCount(s, 0) * (s.pro ? 1.5 : 1);
@@ -12,8 +14,13 @@ export function globalMultiplier(s: GameState): number {
 export function stationRate(s: GameState, id: number): Decimal {
   const p = producers[id], st = s.stations[id];
   if (!p || !st || p.zone > s.zone) return D(0);
-  const milestones = BALANCE.milestones.filter(n => st.owned >= n).length;
-  const zoneMilestones = [25, 50, 100].filter(n => s.stations.slice(p.zone * 6, p.zone * 6 + 6).every(x => x.owned >= n)).length;
+  let milestones = 0, zoneMilestones = 0;
+  for (const n of BALANCE.milestones) if (st.owned >= n) milestones++;
+  for (const n of BALANCE.zoneMilestones) {
+    let all = true;
+    for (let i = p.zone * 6; i < p.zone * 6 + 6; i++) if (s.stations[i].owned < n) { all = false; break; }
+    if (all) zoneMilestones++;
+  }
   const event = currentEvent(s.now);
   return D(p.baseCost).div(BALANCE.payback).mul(st.owned).mul(2 ** (milestones + zoneMilestones)).mul(globalMultiplier(s))
     .mul(event?.income ?? 1).mul(st.manager ? event?.managed ?? 1 : 1);

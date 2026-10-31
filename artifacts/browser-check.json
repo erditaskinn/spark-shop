@@ -44,6 +44,8 @@
     "Settings"
   ],
   "errors": [],
+  "prestigeReset": true,
+  "secondCycleEra": true,
   "mockPurchase": true,
   "turkish": true,
   "overflow": false

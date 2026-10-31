@@ -4,3 +4,4 @@
 @keyframes spark{to{box-shadow:0 0 38px #ffcf5c;transform:scale(1.12)}}@keyframes float-up{from{opacity:1;transform:translate(-50%,20px)}to{opacity:0;transform:translate(-50%,-65px)}}
 @media(min-width:700px){body{background:radial-gradient(ellipse at 50% 20%,#365047,#101d1e 65%)}.app-shell{border-left:1px solid #4f6150;border-right:1px solid #4f6150}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}.reduce-motion *{animation:none!important;transition:none!important}
+.topbar{padding:18px 0 16px}.boost-strip{margin:12px 0 16px}.station-heading{margin-top:16px}.bottom-nav button{font-size:10px}.circuit{max-height:126px}

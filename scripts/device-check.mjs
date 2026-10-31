@@ -14,9 +14,19 @@ const call = (method, params = {}) => new Promise((resolve, reject) => { const i
 const evaluate = async expression => { const r = await call('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true }); if (r.exceptionDetails) throw Error(JSON.stringify(r.exceptionDetails)); return r.result.value; };
 try {
   console.log(await evaluate(`JSON.stringify({title:document.title,buttons:[...document.querySelectorAll('button')].filter(b=>!b.disabled).map(b=>b.textContent.trim()),text:document.body.textContent.slice(-500)})`));
+  if (process.argv.includes('--navigation')) {
+    await evaluate(`(()=>{const b=[...document.querySelectorAll('nav button')].find(b=>b.textContent.includes('Ar-Ge')||b.textContent.includes('Research'));if(!b)throw Error('Research navigation missing');b.click();})()`);
+    await delay(300); if (await evaluate("!!document.querySelector('.board-panel')")) throw Error('Research did not open');
+    execFileSync('adb', ['shell', 'input', 'keyevent', 'KEYCODE_BACK'], { windowsHide: true });
+    await delay(500); if (!await evaluate("!!document.querySelector('.board-panel')")) throw Error('Native back did not return to workshop');
+    mkdirSync('artifacts', { recursive: true });
+    writeFileSync('artifacts/device-navigation.json', JSON.stringify({ android: 11, researchToWorkshopBack: true }, null, 2));
+    writeFileSync('artifacts/phone-workshop.png', Buffer.from((await call('Page.captureScreenshot', { format: 'png' })).data, 'base64'));
+    console.log('Native back navigation passed.');
+  }
   if (process.argv.includes('--watch-ad')) {
     const before = await evaluate(`JSON.parse(localStorage.getItem('spark:analytics')||'[]').filter(e=>e.event==='ad_rewarded').length`);
-    const clicked = await evaluate(`(()=>{const b=[...document.querySelectorAll('button')].find(b=>b.textContent.includes('Video: +2 sa')||b.textContent.includes('Video: +2h'));if(!b||b.disabled)return false;b.click();return true;})()`);
+    const clicked = await evaluate(`(()=>{const b=document.querySelector('button[data-placement="boost"]')||[...document.querySelectorAll('button')].find(b=>b.textContent.includes('Video: +2 sa')||b.textContent.includes('Video: +2h'));if(!b||b.disabled)return false;b.click();return true;})()`);
     if (!clicked) throw Error('Boost video is not ready or age choice is still pending');
     let count = before;
     for (let i = 0; i < 180; i++) {

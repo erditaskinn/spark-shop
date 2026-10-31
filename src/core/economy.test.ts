@@ -20,6 +20,11 @@ describe('station economy', () => {
   test('huge numbers and formatting', () => { expect(format(D('1e15'))).toBe('1aa'); expect(format(1230)).toBe('1.23K'); });
 });
 describe('save safety', () => {
+  test('repairs a zero-income dead end and clamps corrupted daily clocks', () => {
+    const s = deserialize('{"money":0,"stations":[{"owned":0}],"lastAd":999999999,"missionDay":99999}', 100);
+    expect(s.stations[0].owned).toBe(1); expect(s.lastAd).toBe(100); expect(s.missionDay).toBe(0);
+    startRepair(s, 0); for (let i = 0; i < 20; i++) tick(s); expect(s.money.gt(0)).toBe(true);
+  });
   test('migrates and repairs corrupt fields, ignores imported entitlement', () => {
     const s = deserialize('{"version":1,"cash":"123","zone":999,"reputation":-2,"stations":[{"owned":-8}],"pro":true}', 10);
     expect(s.money.eq(123)).toBe(true); expect(s.zone).toBe(4); expect(s.reputation).toBe(0);

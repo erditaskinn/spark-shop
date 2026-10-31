@@ -6,6 +6,7 @@ import { rewardedPlacements } from '../data/rewardedPlacements';
 import { createState, type GameState } from '../core/state';
 import { claimAchievement, claimLogin, claimMission, dailyMissions, loginReady, missionReady, refreshDaily } from '../core/meta';
 import { achievements, loginCycle } from '../data/meta';
+import { BALANCE } from '../data/balance';
 import { buyResearch } from '../core/progression';
 export interface SimResult { profile: string; zones: number[]; prestiges: number[]; firstPurchase: number; firstManager: number; longestStall: number; impressions: number[]; curve: string[]; adIncomeShare: number; lifetime: string }
 export function botBuy(s: GameState): void {
@@ -52,7 +53,7 @@ export function simulate(ads: boolean, mode: 'active' | 'sessions' = 'sessions')
     if (r.firstManager < 0 && s.stations.some(x => x.manager)) r.firstManager = s.now;
     if (s.purchases !== previousPurchases) { previousPurchases = s.purchases; lastAction = s.now; }
     if (unlockZone(s) && s.zone > peakZone) { peakZone = s.zone; r.zones[s.zone] = s.now; lastAction = s.now; }
-    if (s.zone >= 4 && prestigeGain(s) >= Math.max(50, s.reputation * 0.5) && s.now - (r.prestiges.at(-1) ?? 0) > 600) {
+    if (s.zone >= 4 && prestigeGain(s) >= Math.max(BALANCE.prestigeWorth, s.reputation * 0.5) && s.now - (r.prestiges.at(-1) ?? 0) > 600) {
       if (prestige(s)) { r.prestiges.push(s.now); lastAction = s.now; }
     }
     updateFault(s); catchFault(s);

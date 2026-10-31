@@ -27,7 +27,7 @@ export function claimLogin(s: GameState): boolean {
   earn(s, income(s).mul(loginCycle[s.loginStreak] * 60)); s.loginDay = dayOf(s); s.loginStreak = (s.loginStreak + 1) % 7; return true;
 }
 export function achievementProgress(s: GameState, id: number): number {
-  const a = achievements[id]; return a ? [s.purchases, s.repairs, s.faults, s.zone + 1, s.reputation][a.kind] : 0;
+  const a = achievements[id]; return a ? (a.kind === 3 && a.rank > 5 ? s.prestiges : [s.purchases, s.repairs, s.faults, s.zone + 1, s.reputation][a.kind]) : 0;
 }
 export function claimAchievement(s: GameState, id: number): boolean {
   const a = achievements[id]; if (!a || s.achievements.includes(id) || achievementProgress(s, id) < a.goal) return false;

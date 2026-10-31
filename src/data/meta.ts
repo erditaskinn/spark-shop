@@ -1,7 +1,7 @@
 export const achievements = Array.from({ length: 50 }, (_, id) => {
   const kind = Math.floor(id / 10), rank = id % 10;
-  const goals = [5 * 2 ** rank, 10 * 3 ** rank, 1 + rank * 5, 1 + Math.floor(rank / 2), [1, 2, 5, 10, 25, 50, 100, 500, 1000, 5000][rank]];
-  return { id, kind, rank: rank + 1, goal: goals[kind], badges: 1 + Math.floor(rank / 3), key: `achievement.${kind}` };
+  const goals = [5 * 2 ** rank, 10 * 3 ** rank, 1 + rank * 5, 1 + rank % 5, [1, 2, 5, 10, 25, 50, 100, 500, 1000, 5000][rank]];
+  return { id, kind, rank: rank + 1, goal: goals[kind], badges: 1 + Math.floor(rank / 3), key: `achievement.${kind === 3 && rank >= 5 ? 5 : kind}` };
 });
 export const missionTemplates = Array.from({ length: 20 }, (_, id) => {
   const kind = id < 7 ? 0 : id < 14 ? 1 : 2, rank = id - (kind === 0 ? 0 : kind === 1 ? 7 : 14);

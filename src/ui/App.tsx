@@ -16,14 +16,19 @@ import { AdButton, Offline, Shop, type RewardActions } from './Rewards';
 import { Goals } from './Goals';
 import { MockVideo } from './MockVideo';
 import { currentEvent } from '../data/meta';
+import { RollingMoney } from './RollingMoney';
 export type Screen = 'main' | 'zones' | 'research' | 'prestige' | 'more' | 'missions' | 'shop' | 'settings';
 const icons = { main: '⌁', zones: '▧', research: '⚗', prestige: '✦', more: '···' };
 export const uiBridge = { back: (): boolean => false };
 export function App({ actions, settingsActions }: { actions: RewardActions; settingsActions: SettingsActions }) {
   const [, refresh] = useState(0), [screen, setScreen] = useState<Screen>('main'), [toast, setToast] = useState(''), [floating, setFloating] = useState('');
-  const s = game.state, t = (key: string) => translate(s.settings.language, key);
+  const s = game.state, t = (key: string) => translate(s.settings.language, key), platformMessage = game.error;
   useEffect(() => { const listener = () => refresh(x => x + 1); game.listeners.add(listener); return () => { game.listeners.delete(listener); }; }, []);
-  useEffect(() => { if (!toast) return; const id = setTimeout(() => setToast(''), 3500); return () => clearTimeout(id); }, [toast]);
+  useEffect(() => {
+    if (!toast && !platformMessage) return;
+    const id = setTimeout(() => { setToast(''); if (game.error === platformMessage) { game.error = ''; game.emit(); } }, 3500);
+    return () => clearTimeout(id);
+  }, [toast, platformMessage]);
   useEffect(() => { if (!floating) return; const id = setTimeout(() => setFloating(''), 900); return () => clearTimeout(id); }, [floating]);
   useEffect(() => { document.documentElement.lang = s.settings.language; document.body.classList.toggle('reduce-motion', !s.settings.motion); }, [s.settings.language, s.settings.motion]);
   useEffect(() => { uiBridge.back = () => { if (screen !== 'main') { setScreen('main'); return true; } return false; }; }, [screen]);
@@ -35,7 +40,7 @@ export function App({ actions, settingsActions }: { actions: RewardActions; sett
   const props = { s, t, act }, rewardProps = { ...props, actions }, event = currentEvent(s.now);
   return <div class="app-shell">
     <header class="topbar"><a href="#" onClick={e => { e.preventDefault(); setScreen('main'); }} class="brand"><span class="brand-mark">ϟ</span><span>{t('game.shortTitle')}<small>{t('game.title')}</small></span></a><button class="icon-button" aria-label={t('nav.settings')} onClick={() => setScreen('settings')}>⚙</button></header>
-    <div class="wallet"><div><span class="eyebrow">{t('cash')}</span><strong class="cash">{format(s.money)}</strong></div><div class="income"><span class="income-dot"/>+{format(income(s).mul(s.boostUntil > s.now ? 2 : 1))}<small>{t('income')}</small></div></div>
+    <div class="wallet"><div><span class="eyebrow">{t('cash')}</span><strong class="cash"><RollingMoney value={s.money} motion={s.settings.motion}/></strong></div><div class="income"><span class="income-dot"/>+{format(income(s).mul(s.boostUntil > s.now ? 2 : 1))}<small>{t('income')}</small></div></div>
     <main id="main-content">
       {screen === 'main' ? <><div class="greeting"><span>{t('tagline')}</span><span>✧ {s.badges}</span></div><Board {...props} onFault={() => act(() => { const amount = catchFault(s); if (amount.gt(0)) { setFloating(`+${format(amount)}`); playSound(s.settings.sound, true); } })}/>
         {s.tutorial < 5 ? <section class="tutorial panel"><div class="section-label"><span>{t('tutorial.title')}</span><span>{s.tutorial + 1}/5</span></div><p>{t(`tutorial.${s.tutorial}`)}</p><div class="two-buttons"><button onClick={() => act(() => { s.tutorial = 5; })}>{t('tutorial.skip')}</button><button class="primary" onClick={() => act(() => { s.tutorial++; })}>{t('tutorial.next')}</button></div></section> : null}

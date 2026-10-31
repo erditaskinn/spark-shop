@@ -1,6 +1,6 @@
 import type { PlacementId } from '../data/rewardedPlacements';
 import { placement } from '../data/rewardedPlacements';
-import { adEligible, type RewardContext } from '../core/rewards';
+import { adEligible, boostAwardSeconds, type RewardContext } from '../core/rewards';
 import { format } from '../core/numbers';
 import { income } from '../core/economy';
 import type { ScreenProps } from './types';
@@ -11,7 +11,8 @@ export function AdButton({ s, t, actions, id, context }: ScreenProps & { actions
   useEffect(() => { if (visible) actions.offered(id); }, [visible, id]);
   if (!visible) return null;
   const p = placement(id), amount = income(s).mul(60 * (context?.minutes ?? p.minutes));
-  return <button class="ad-button" onClick={() => actions.watch(id, context)}>▷ {t(`ad.label.${id}`)}{p.type === 'income' || p.type === 'claim' ? <small>+{format(amount)}</small> : null}</button>;
+  const label = id === 'boost' ? t('ad.boostDuration').replace('{duration}', `${Math.floor(boostAwardSeconds(s) / 60)} ${t('minutes')}`) : t(`ad.label.${id}`);
+  return <button class="ad-button" data-placement={id} onClick={() => actions.watch(id, context)}>▷ {label}{p.type === 'income' || p.type === 'claim' ? <small>+{format(amount)}</small> : null}</button>;
 }
 export function Shop(props: ScreenProps & { actions: RewardActions }) {
   const { s, t, actions } = props;

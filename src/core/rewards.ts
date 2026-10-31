@@ -7,13 +7,16 @@ import { random, type GameState } from './state';
 export interface RewardContext { claim?: number; minutes?: number; ready?: boolean }
 export interface RewardTicket { id: string; placement: PlacementId; amount: Decimal; offlineId: number; claim: number; day: number; lucky: number; started: boolean }
 export const dayOf = (s: GameState) => Math.floor(s.now / 86400);
+export function boostAwardSeconds(s: GameState): number {
+  return Math.max(0, Math.min(BALANCE.boostMax - Math.max(0, s.boostUntil - s.now), 7200 * (1 + researchCount(s, 3) * 0.05)));
+}
 export function adEligible(s: GameState, id: PlacementId, context: RewardContext = {}): boolean {
   const p = placement(id), last = s.adTimes[id] ?? -1e12;
   if (!p.enabled || s.zone < p.zone || s.now - s.lastAd < BALANCE.adGap || s.now - last < p.cooldown) return false;
   if (id === 'chest' && s.now - (s.adTimes.freeChest ?? s.now) < 600) return false;
   if ((s.adCounts[`${dayOf(s)}:${id}`] ?? 0) >= p.dailyCap) return false;
   if (id === 'welcome' && s.offline.lte(0)) return false;
-  if (id === 'boost' && s.boostUntil - s.now >= BALANCE.boostMax - 1) return false;
+  if (id === 'boost' && boostAwardSeconds(s) < 60) return false;
   if ((id === 'login' || id === 'mission') && !context.ready) return false;
   // Long skips are contextual: a fresh prestige or saving for an expensive station.
   if ((id === 'skip1' || id === 'skip4') && s.prestiges === 0) return false;

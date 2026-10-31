@@ -8,7 +8,7 @@ test('zone goals and old stations remain productive', () => {
   expect(unlockZone(s)).toBe(true); expect(s.stations[0].owned).toBe(1); expect(s.zone).toBe(1);
 });
 test('prestige has exact incremental gain and preserves permanent items', () => {
-  const s = createState(); s.lifetime = D(2e30); s.research = [0]; s.boostUntil = 80;
+  const s = createState(); s.lifetime = D(5e29); s.research = [0]; s.boostUntil = 80;
   expect(prestigeGain(s)).toBe(2); expect(prestige(s)).toBe(true);
   expect(s.reputation).toBe(2); expect(s.badges).toBe(2); expect(s.research).toEqual([0]);
   expect(prestige(s)).toBe(false); expect(s.boostUntil).toBe(80);

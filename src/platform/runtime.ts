@@ -23,7 +23,7 @@ export const actions: RewardActions = {
 };
 async function purchase(): Promise<void> {
   if (busy) return; busy = true;
-  try { game.state.pro = await iap.purchase(); if (game.state.pro) { collectOffline(game.state); notify('shop.active'); } }
+  try { game.state.pro = await iap.purchase(); if (game.state.pro) { collectOffline(game.state); game.state.boostUntil = Math.max(game.state.boostUntil, game.state.now + 7200); notify('shop.active'); } }
   catch { notify('error'); } finally { busy = false; await game.persist(); game.emit(); }
 }
 async function watch(id: PlacementId, context?: RewardContext): Promise<void> {
@@ -46,7 +46,12 @@ export async function initializeServices(): Promise<void> {
   try {
     try { game.state.pro = await iap.init(); actions.price = await iap.price(); }
     catch { analytics.track('store_unavailable'); actions.price = null; }
-    if (game.state.pro) { collectOffline(game.state); game.state.boostUntil = Math.max(game.state.boostUntil, game.state.now + 7200); }
+    if (game.state.pro) {
+      // Imported saves never supply an entitlement. Restore the verified Pro
+      // multiplier to pending offline income, computed before the store replied.
+      game.state.offline = game.state.offline.mul(1.5);
+      collectOffline(game.state); game.state.boostUntil = Math.max(game.state.boostUntil, game.state.now + 7200);
+    }
     await ads.init(game.state.settings.age === 'minor'); initialized = true;
   } catch { retryAfter = Date.now() + 60000; notify('adFailed'); }
   finally { initializing = false; game.emit(); }
